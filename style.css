@@ -24,8 +24,9 @@
     height: 350px;
 }
 
-#map{
+#googleMap{
     height: 100%;
+    width:100%;
 }
 
 .footer {
@@ -183,3 +184,4 @@
 .btn-facebook{
     background-color:#3B5998;
 }
+
