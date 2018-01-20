@@ -1,0 +1,205 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+	<title> Sign In SafeCommute</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
+
+	<link rel="stylesheet" type="text/css" href="./main.css">
+</head>
+
+<body>
+  <header>
+  </header>
+
+  <nav class="navbar">
+    <a class="navbar-brand" href="#">SafeCommute</a>
+  </nav>
+
+  <main role="main">
+    <!-- Main area for primary marketing message and call to sign up for service-->
+    <form class="form-signin">
+    	<h2 class="form-signin-heading"> Start now!</h2>
+
+      <input type="text" id="emailInput" class="input-block-level" placeholder="Email address"></input>
+      <input type="passwordInput" class="input-block-level" placeholder="Password"></input>
+
+      <button id = "signUpButt" class = "sign-up-button">Sign Up</button> 
+      <button disabled id="signInButt" class ="sign-in-button">Sign In</button>
+    </form>
+
+      <!-- Container where we'll display the user details -->
+  <div class="quickstart-user-details-container">
+    Firebase sign-in status: <span id="quickstart-sign-in-status">Unknown</span>
+    <div>Firebase auth <code>currentUser</code> object value:</div>
+    <pre><code id="quickstart-account-details">null</code></pre>
+  </div>
+
+</main>
+
+  <footer>
+  </footer>
+
+</body>
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+
+
+<script type="text/javascript">
+  // Initialize Firebase according to our project specifications
+  var config = {
+    apiKey: "AIzaSyD30NRd2YYwkCS25FArj058_oUoXdPYp2I",
+    authDomain: "safecommutesbhacks2018.firebaseapp.com",
+    databaseURL: "https://safecommutesbhacks2018.firebaseio.com",
+    projectId: "safecommutesbhacks2018",
+    storageBucket: "safecommutesbhacks2018.appspot.com",
+    messagingSenderId: "178423802061",
+  };
+  firebase.initializeApp(config);
+
+
+  /**
+  * Handles sign in button press
+  */
+
+  function toggleSignIn() {
+  	if(firebase.auth().currentUser) { //if someone is signed in already
+  		firebase.auth().signOut(); // they're clicking to sign out
+  	} else { // somebody wants to sign in 
+  		var email = document.getElementById('email').value;
+  		var password = document.getElementById('password').value;
+
+  		if(email.length < 4) {
+  			alert('Please enter an email address.');
+  			return;
+  		}
+
+  		if (password.length < 4) {
+  			alert('Please enter a password');
+  			return;
+  		}
+
+  		// SIgn in using the given email anad pass
+  		firebase.auth().signInWithEmailandPassword(email, password).catch(function(error) {
+  			//Handle Errors here
+  			var errorCode = error.code;
+  			var errorMessage = error.message;
+
+  			if(errorCode == 'auth/wrong-password') {
+  				alert('Wrong password.');
+  			} else {
+  				alert(errorMessage);
+  			}
+  			console.log(error);
+  			document.getElementById('signInButt').disabled = false;
+  		});
+  		// END authwithemail
+  	}
+  	document.getElementById('signInButt').disabled = true;
+  }
+
+
+  /*
+  * Handles sign up button press 
+  */
+  function handleSignUp() {
+  	var email = document.getElementById('emailInput').value;
+  	var password = document.getElementById('passwordInput').value;
+
+  	if(email.length < 4) {
+  		alert('Please enter a valid email address');
+  		return;
+  	}
+
+  	if(password.length < 4) {
+  		alert('Please enter a password');
+  		return;
+  	}
+
+  	firebase.auth().signInWithEmailandPassword(email, password).catch(function(error) {
+  		//Handle errors here.
+
+  		var errorCode= error.code;
+  		var errorMessage = error.message;
+
+  		if(errorCode == 'auth/weak-password') {
+  			alert('The password is too weak.');
+  		} else {
+  			alert(errorMessage);
+  		}
+  		console.log(error);
+
+  	});
+  	// END createwithemail
+  }
+
+
+  function sendPasswordReset() {
+  	var email = document.getElementById('emailInput').value;
+  	firebase.auth().sendPasswordResetEmail(email).then(function() {
+  		alert('Password Reset Email Sent!');
+  	}).catch(function(error) {
+  		//Handle errors here
+  		var errorCode = error.code;
+  		var errorMessage = error.message;
+
+  		if(errorCode == 'auth/invalid-email') {
+  			alert(errorMessage);
+  		} else if (errorCode == 'auth/user-not-found') {
+  			alert(errorMessage);
+  		}
+  		console.log(error);
+  	});
+  	//END sendpasswordemail
+  }
+
+  /**
+  * handles setting up UI event listeners and registering Firebase auth listeners:
+  	* - firebase.auth().onAuthStateChanged listerer called when user is signed in or out, and THAT is where we update the UI
+  */
+
+  function initApp() {
+  	//Listening for auth state changes
+  	firebase.auth().onAuthStateChanged(function(user) {
+  		if(user) {
+  			var displayName = user.displayName;
+  			var email = user.email;
+  			var emailVerified = user.emailVerified;
+  			var uid = user.uid;
+
+  			document.getElementById('quickstart-sign-in-status').textContent = 'Signed in!';
+  			document.getElementById('signInButt').textContent = 'Sign out';
+  			document.getElementById('quickstart-account-details').textContent = JSON.stringify(user, null, ' ');
+
+
+  		} else { //User is signed out 
+  			document.getElementById('quickstart-sign-in-status').textContent = 'Signed out';
+  			document.getElementById('signInButt').textContent = 'Sign in';
+  			document.getElementById('quickstart-account-details').textContent = 'null';
+
+  		}
+
+  		document.getElementById('signInButt').disabled=false;
+  	});
+
+  	document.getElementById('signInButt').addEventListener('click', toggleSignIn, false);
+
+  	document.getElementById('signUpButt').addEventListener('click', handleSignUp, false);
+  }
+
+
+
+
+  window.onload = function() {
+      initApp();
+    };
+</script>
+
+
+</html>
