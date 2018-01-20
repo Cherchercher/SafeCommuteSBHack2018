@@ -1,0 +1,94 @@
+  <!DOCTYPE html>
+  <html>
+  <body>
+
+  <h1>SBHacks</h1>
+
+  <div id="googleMap" style="width:50%;height:400px;"></div>
+
+  <script>
+  var map;
+  var infowindow;
+  var pointOfInterest;
+  function sbHackMap() {
+  //This is mapProperties
+  //35.379701, -119.038609--Bkerfiel
+  //36.156525, -115.173636---Las Veg
+
+  var mapProp= {
+      center: pointOfInterest,//Make this dynamic eventually
+      zoom:17,
+  };
+  var directionsService = new google.maps.DirectionsService;
+  var directionsDisplay = new google.maps.DirectionsRenderer;
+  map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
+  directionsDisplay.setMap(map);
+  infowindow = new google.maps.InfoWindow();
+
+
+  //document.getElementById('submit').addEventListener('click', function() { //Add Submit button later
+  	      var origin="Los Angeles, CA";
+            var destination="San Francisco, CA";
+            calculateAndDisplayRoute(directionsService, directionsDisplay,origin,destination);
+
+  }
+  function calculateAndDisplayRoute(directionsService, directionsDisplay,or,des) {
+          
+          directionsService.route({
+            origin: or,
+            destination: des,
+            travelMode: 'DRIVING'
+          }, function(response, status) {
+            if (status === 'OK') {
+              directionsDisplay.setDirections(response);
+              var time = response.routes[0].legs[0].duration.text;
+              fetchCheckPoints(time,or,des);
+              //alert("time"+response.routes[0].legs[0].duration.text);
+              prompt("route",JSON.stringify(response));
+            } else {
+              window.alert('Directions request failed due to ' + status);
+            }
+          });
+
+      
+        }
+  function callback(results, status) {
+          alert("callback called.."+results+"....."+status);
+          if (status == google.maps.places.PlacesServiceStatus.OK) {
+            alert("ok");
+            for (var i = 0; i < results.length; i++) {
+              createMarker(results[i]);
+            }
+          }
+        }
+
+  function createMarker(place) {
+          var placeLoc = place.geometry.location;
+          var marker = new google.maps.Marker({
+            map: map,
+            position: place.geometry.location
+          });
+
+          google.maps.event.addListener(marker, 'click', function() {
+            infowindow.setContent(place.name);
+            infowindow.open(map, this);
+          });
+        }
+
+  function fetchCheckPoints(time,origin,destination){
+      alert("I am up for finding gas statations"+time);
+      pointOfInterest=new google.maps.LatLng(35.379701,-119.038609);
+      var service = new google.maps.places.PlacesService(map);
+          service.nearbySearch({
+            location: pointOfInterest,
+            radius: 50000,
+            type: ['atm']
+          }, callback);
+
+  }
+  </script>
+  <!---This is the script for getting ggole api -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-DxoYSJV45J7rAz6-qCCv8HB2Wwqyp0&libraries=places&callback=sbHackMap"></script>
+
+  </body>
+  </html>
