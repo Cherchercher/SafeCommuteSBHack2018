@@ -139,21 +139,48 @@
       var globalName;
       var globalDic=[];
       var count=1;
+      var numberOfStops;
       var category=$('.btn-group > .btn.active').html();
       //alert("category"+category);
+      var config = {
+            apiKey: "AIzaSyD30NRd2YYwkCS25FArj058_oUoXdPYp2I",
+            authDomain: "safecommutesbhacks2018.firebaseapp.com",
+            databaseURL: "https://safecommutesbhacks2018.firebaseio.com",
+            projectId: "safecommutesbhacks2018",
+            storageBucket: "safecommutesbhacks2018.appspot.com",
+            messagingSenderId: "178423802061",
+         };
+      firebase.initializeApp(config);
       $( "#to" ).click(function() {
         //alert($("#searchText").val());
         origin=$("#searchText").val();
         destination=$("#searchText2").val();
         sbHackMap();
       });
+      function writeDummyItinerary(userId) {
+    
+            var usersRef = firebase.database().ref("users");
+            // even if itineraries doesnte xist yet, this will be ok. just write to the node and it will get created
+            var newItineraryRef = usersRef.child(userId).child("itineraries").push();
+            var newItineraryId = newItineraryRef.key;
+            newItineraryRef.set({
+              to: globalDic.to,
+              from: globalDic.from,
+              numStops: Math.ceil(numberOfStops),
+              jsonInfo: JSON.stringify(globalDic)
+            });
+            
+        }
       function submitEver(){
         prompt("Final Json",JSON.stringify(globalDic));
          document.getElementById("usr").value=JSON.stringify(globalDic);
+         writeDummyItinerary(1222);
       }
       function myFunction() {
             var x = document.getElementById("mySelect").selectedIndex;
             var y = document.getElementById("mySelect").options;
+            globalDic.to=destination;
+            globalDic.from=origin;
             globalDic.push({
                 locationName:   globalPlaceID,
                 type: "cafe",
@@ -213,7 +240,7 @@
               var hoursStrecth=2;
               var time = response.routes[0].legs[0].duration.text;
               //alert(time);
-              var numberOfStops=(parseInt(time.split("hours")[0]*60)+parseInt((time.split("hours")[1]).split("mins")[0]))/(hoursStrecth*60);
+              numberOfStops=(parseInt(time.split("hours")[0]*60)+parseInt((time.split("hours")[1]).split("mins")[0]))/(hoursStrecth*60);
               //alert(numberOfStops);
               var myRoute = response.routes[0].overview_path;
               // /alert("No. Of routes availabe.."+myRoute.length+"...No. Of stops..."+Math.ceil(numberOfStops));
