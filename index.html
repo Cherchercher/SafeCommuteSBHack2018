@@ -391,6 +391,17 @@
               }, callback);
       //}
   }
+
+    window.onload=function() {
+    firebase.auth().onAuthStateChanged(function(currentUser) {
+      if(currentUser) {
+        var currUserId=currentUser.uid;
+        console.log(currentUser);
+      } else {
+        window.location='login.html';
+      }
+    });
+  }
   </script>
   <!---This is the script for getting ggole api -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-DxoYSJV45J7rAz6-qCCv8HB2Wwqyp0&libraries=places&callback=autoComp"></script>
