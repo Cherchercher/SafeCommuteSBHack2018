@@ -93,12 +93,17 @@
   
           </div>
         </div>
-      
+       <div class="btn-group" data-toggle="buttons-radio">
+        <button class="btn">Gas</button>
+        <button class="btn" active="true">Cafe</button>
+        <button class="btn">ATM</button>
+        <button class="btn">Acc</button> 
+        </div>
       <div class="row options">
           <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> Gas <i class="fa fa-plug"></i> </button></div>
           <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> Cafe <i class="fa fa-coffee"></i></button></div>
           <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> ATM <i class="fa fa-money"></i></button></div>
-          <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> ACC <i class="fa fa-bed" aria-hidden='true'></i></button></div>
+          <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> Acc <i class="fa fa-bed" aria-hidden='true'></i></button></div>
       </div>
 
     <div id = "map_container">
@@ -106,16 +111,16 @@
       <div id="googleMap" style="width:50%;height:400px;"></div>
 
     </div>
-    <li id="yo" class="dropdown">
-      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Site Select<span class="caret"></span></a>
-      <ul class="dropdown-menu" id="projectSelectorDropdown">
-      </ul>
-    </li>         
+   <form>
+  <select id="mySelect" size=2>
+  </select>
+  <button type="button" onclick="myFunction()">Choose</button>
+</form>       
   <div id="TextBoxContainer">
     <!--Textboxes will be added here -->
 </div>
 <div class="row text-right options">
-        <div class="col-md-12"> <button type="button submit" class="btn btn-success" style="width:30%;" > Go </button></div>
+        <div class="col-md-12"> <button type="button submit" class="btn btn-success" style="width:30%;"  onclick="submitEver()"> Go </button></div>
       </div>
       
     </div>
@@ -134,19 +139,29 @@
       var globalPlaceID;
       var globalType;
       var globalName;
-      
+      var globalDic=[];
+      var count=1;
+      var category=$('.btn-group > .btn.active').html();
+      alert("category"+category);
       $( "#to" ).click(function() {
         //alert($("#searchText").val());
         origin=$("#searchText").val();
         destination=$("#searchText2").val();
         sbHackMap();
       });
-
-      $("#projectSelectorDropdown").click(function(){
-       alert($("#projectSelectorDropdown :selected").text()); // The text content of the selected option
-       alert($("#projectSelectorDropdown").val()); // The value of the selected option
-        //alert("yoooo"+value+"..."+text);
-     });
+      function submitEver(){
+        prompt("Final Json",JSON.stringify(globalDic));
+      }
+      function myFunction() {
+            var x = document.getElementById("mySelect").selectedIndex;
+            var y = document.getElementById("mySelect").options;
+            globalDic.push({
+                locationName:   globalPlaceID,
+                type: "cafe",
+                placeName: y[x].text
+            });
+            alert("Index: " + y[x].index + " is " + y[x].text);
+}
       
     function autoComp(){
               var input = document.getElementById('searchText');
@@ -198,7 +213,7 @@
               directionsDisplay.setDirections(response);
               var hoursStrecth=2;
               var time = response.routes[0].legs[0].duration.text;
-              alert(time);
+              //alert(time);
               var numberOfStops=(parseInt(time.split("hours")[0]*60)+parseInt((time.split("hours")[1]).split("mins")[0]))/(hoursStrecth*60);
               //alert(numberOfStops);
               var myRoute = response.routes[0].overview_path;
@@ -227,20 +242,25 @@
               //
               dictOfSuggestion.push(results[i]);
             }
-            prompt("dictOfSuggestion",JSON.stringify(dictOfSuggestion));
-            $("#projectSelectorDropdown").empty();
-            var list = document.getElementById("projectSelectorDropdown"); 
+            //prompt("dictOfSuggestion",JSON.stringify(dictOfSuggestion));
+            $("#mySelect").empty();
 
-            for (var i = 0; i < dictOfSuggestion.length; i++){                
-            var opt = dictOfSuggestion[i].name;  
-            var li = document.createElement("li");
-            var link = document.createElement("a");             
-            var text = document.createTextNode(opt);
-            link.appendChild(text);
-            link.href = "#";
-            li.appendChild(link);
-            list.appendChild(li);
-            }
+            for (var i = 0; i < dictOfSuggestion.length; i++){   
+            var x = document.getElementById("mySelect"); 
+            var option = document.createElement("option");
+            option.text = dictOfSuggestion[i].name;
+            x.add(option);
+          }
+            /*for (var i = 0; i < dictOfSuggestion.length; i++){                
+                var opt = dictOfSuggestion[i].name;  
+                var li = document.createElement("li");
+                var link = document.createElement("a");             
+                var text = document.createTextNode(opt);
+                link.appendChild(text);
+                link.href = "#";
+                li.appendChild(link);
+                list.appendChild(li);
+                }*/
             ////-----------------------------------------------//
             //alert(JSON.stringify(dictOfSuggestion[0].photos[0].getUrl({'maxWidth': 35, 'maxHeight': 35})));
             /*
@@ -299,27 +319,30 @@
           placeLoc = place.geometry.location;
           marker = new google.maps.Marker({
             map: map,
-            position: place.geometry.location,
-            title: 'place.name'
+            position: place.geometry.location
+            
             });
           }
           else{
-            //var add=displayLocation(place.lat(),place.lng()).address;
-            //alert(add);
+            alert(JSON.stringify(place));
            
             placeLoc = place;
             marker = new google.maps.Marker({
             map: map,
             position: place,
-            title: 'A'
-
+            title: 'L'+count
+      
             });
+            count++;
           }
           //////CLICKINg///////////////////
           marker.setMap(map);
           google.maps.event.addListener(marker, 'click', function() {
+            alert(marker.title);
+            globalPlaceID=marker.title;
+            //Sarre global yahan reset honge
             dictOfSuggestion=[];
-            alert("I am clicking something new..Dict shud be empty.."+dictOfSuggestion.length+"...I am clicking for.."+place);
+           // alert("I am clicking something new..Dict shud be empty.."+dictOfSuggestion.length+"...I am clicking for.."+place);
             fetchCheckPoints(place);
             
             
