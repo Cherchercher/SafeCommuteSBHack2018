@@ -93,12 +93,7 @@
   
           </div>
         </div>
-       <div class="btn-group" data-toggle="buttons-radio">
-        <button class="btn">Gas</button>
-        <button class="btn" active="true">Cafe</button>
-        <button class="btn">ATM</button>
-        <button class="btn">Acc</button> 
-        </div>
+    
       <div class="row options">
           <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> Gas <i class="fa fa-plug"></i> </button></div>
           <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> Cafe <i class="fa fa-coffee"></i></button></div>
@@ -107,8 +102,8 @@
       </div>
 
     <div id = "map_container">
-          <div id ="map"><h1>Map Here </h1></div>
-      <div id="googleMap" style="width:50%;height:400px;"></div>
+          <div id ="map"></div>
+      <div id="googleMap" style="width:50%;height:400px;"><h1>Your Path is here ! </h1></div>
 
     </div>
    <form>
@@ -120,7 +115,7 @@
     <!--Textboxes will be added here -->
 </div>
 <div class="row text-right options">
-        <div class="col-md-12"> <button type="button submit" class="btn btn-success" style="width:30%;"  onclick="submitEver()"> Go </button></div>
+        <div class="col-md-12"> <button type="button submit" class="btn btn-success" style="width:30%;"  onclick="location.href='tracker.html';" > Go </button></div>
       </div>
       
     </div>
@@ -142,7 +137,7 @@
       var globalDic=[];
       var count=1;
       var category=$('.btn-group > .btn.active').html();
-      alert("category"+category);
+      //alert("category"+category);
       $( "#to" ).click(function() {
         //alert($("#searchText").val());
         origin=$("#searchText").val();
@@ -160,7 +155,7 @@
                 type: "cafe",
                 placeName: y[x].text
             });
-            alert("Index: " + y[x].index + " is " + y[x].text);
+            //alert("Index: " + y[x].index + " is " + y[x].text);
 }
       
     function autoComp(){
@@ -235,7 +230,7 @@
   function callback(results, status) {
           //alert("callback called.."+JSON.stringify(results)+"....."+status);
           if (status == google.maps.places.PlacesServiceStatus.OK) {
-            alert("ok");
+            //alert("ok");
             dictOfSuggestion=[];
             for (var i = 0; i < 10/*results.length*/; i++) {
               //createMarker(results[i],1);
@@ -324,7 +319,7 @@
             });
           }
           else{
-            alert(JSON.stringify(place));
+            //alert(JSON.stringify(place));
            
             placeLoc = place;
             marker = new google.maps.Marker({
@@ -338,7 +333,7 @@
           //////CLICKINg///////////////////
           marker.setMap(map);
           google.maps.event.addListener(marker, 'click', function() {
-            alert(marker.title);
+            //alert(marker.title);
             globalPlaceID=marker.title;
             //Sarre global yahan reset honge
             dictOfSuggestion=[];
@@ -350,7 +345,7 @@
         }
 
   function fetchCheckPoints(place){
-      alert("I am up for finding atm statations");
+      //alert("I am up for finding atm statations");
       //var arrForLoc[]=pathPointArray;
       //alert(arrForLoc);
       //for (var i = 0; i < pathPointArray.length; i++) {
