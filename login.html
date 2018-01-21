@@ -6,9 +6,9 @@
     <meta name="description" content="">
     <link href="style.css" rel="stylesheet" type="text/css">
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-    <meta name="author" content="Cher Huang, Ishani, ">
+    <meta name="author" content="Cher Huang, Ishani, Haejin Jo">
 
-    <title>Safe Communte SBHack2018</title>
+    <title>Safe Commute SBHacks2018</title>
 
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -26,6 +26,9 @@
 
     </style>
 
+    <!--Firebase CSS -->
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
+
   </head>
 
   <body>
@@ -33,108 +36,329 @@
 <div class="container">
         <div class="card card-container">
             <!-- <img class="profile-img-card" src="//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" alt="" /> -->
-            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
-            <p id="profile-name" class="profile-name-card"></p>
-            <form class="form-signin">
-                <span id="reauth-email" class="reauth-email"></span>
-                <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
-                <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-                <div id="remember" class="checkbox">
-                    <label>
-                        <input type="checkbox" value="remember-me"> Remember me
-                    </label>
-                </div>
-                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Sign in</button>
-                <a class="btn btn-block btn-social btn-facebook">
-                    <span class="fa fa-twitter"></span> Sign in with Facebook
-                </a>
-                  </form><!-- /form -->
+<!--             <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" /> -->
+
+
+<!--             <p id="profile-name" class="profile-name-card"></p> -->
+            <div class="form-signin">
+<!--                 <span id="reauth-email" class="reauth-email"></span>
+                 -->
+                <input type="email" id="emailInput" class="form-control" placeholder="Email address" required autofocus>
+
+                <input type="password" id="passwordInput" class="form-control" placeholder="Password" required>
+
+                <button disabled id="signInButt" class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Sign in</button>
+                <p> Don't have an account? <button id="signUpButt" class="btn btn-lg btn-primary btn-block btn-signin">Sign up!</button></p> or<br>
+
+                <button id="googleSignInButt" class="btn btn-block btn-social btn-facebook">
+                    <span class="fa fa-google-plus" aria-hidden="true"></span> Sign in with Google
+                </button>
+                  </div><!-- /form -->
             <a href="#" class="forgot-password">
                 Forgot the password?
             </a>
         </div><!-- /card-container -->
     </div><!-- /container -->
 
+      <!-- Container where we'll display the user details -->
+  <div class="quickstart-user-details-container">
+    Firebase sign-in status: <span id="quickstart-sign-in-status">Unknown</span>
+    <div>Firebase auth <code>currentUser</code> object value:</div>
+    <pre><code id="quickstart-account-details">null</code></pre>
+  </div>
 
  <!-- Bootstrap core JavaScript -->
  <script src="vendor/jquery/jquery.min.js"></script>
  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-</body>     
-</html>
 
-<script>
-$( document ).ready(function() {
-  // DOM ready
 
-  testLocalStorageData();
-  // Load profile if it exits
-  loadProfile();
+
+</body>  
+
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+
+
+<script type="text/javascript">
+  // Initialize Firebase according to our project specifications
+  var config = {
+    apiKey: "AIzaSyD30NRd2YYwkCS25FArj058_oUoXdPYp2I",
+    authDomain: "safecommutesbhacks2018.firebaseapp.com",
+    databaseURL: "https://safecommutesbhacks2018.firebaseio.com",
+    projectId: "safecommutesbhacks2018",
+    storageBucket: "safecommutesbhacks2018.appspot.com",
+    messagingSenderId: "178423802061",
+  };
+  firebase.initializeApp(config);
+
+
+  /**
+  * Handles sign in button press
+  */
+
+  function toggleSignIn() {
+    if(firebase.auth().currentUser) { //if someone is signed in already
+            document.getElementById('signInButt').disabled=false;
+             firebase.auth().signOut(); // they're clicking to sign out
+
+    } else { // somebody wants to sign in 
+      var email = document.getElementById('emailInput').value;
+      var password = document.getElementById('passwordInput').value;
+
+      if(email.length < 4) {
+        alert('Please enter an email address.');
+        return;
+      }
+
+      if (password.length < 4) {
+        alert('Please enter a password');
+        return;
+      }
+
+      // SIgn in using the given email anad pass
+      firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+        //Handle Errors here
+        var errorCode = error.code;
+        var errorMessage = error.message;
+
+        if(errorCode == 'auth/wrong-password') {
+          alert('Wrong password.');
+        } else {
+          alert(errorMessage);
+        }
+        console.log(error);
+        document.getElementById('signInButt').disabled = false;
+      });
+      // END authwithemail
+    }
+ 
+  }
+
+  // CALLED WHEN USER PRESSES SIGN IN WITH GOOGLE
+  function googleSignIn() {
+    if(!firebase.auth().currentUser) { // if not signed in 
+      var provider = new firebase.auth.GoogleAuthProvider();
+
+      provider.addScope('https://www.googleapis.com/auth/plus.login');
+
+      firebase.auth().signInWithRedirect(provider);
+    } 
+
+
+    document.getElementById('googleSignInButt').disabled=true;
+  }
+
+
+  /*
+  * Handles sign up button press 
+  */
+  function handleSignUp() {
+    console.log("signing up a user")
+    var email = document.getElementById('emailInput').value;
+    var password = document.getElementById('passwordInput').value;
+
+    if(email.length < 4) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    if(password.length < 4) {
+      alert('Please enter a password');
+      return;
+    }
+
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then(function(user) {
+      console.log(user);
+    })
+    .catch(function(error) {
+      //Handle errors here.
+
+
+      var errorCode= error.code;
+      var errorMessage = error.message;
+
+      if(errorCode == 'auth/weak-password') {
+        alert('The password is too weak.');
+      } else {
+        alert(errorMessage);
+      }
+      console.log(error);
+
+    });
+    // END createwithemail
+  }
+
+
+  function sendPasswordReset() {
+    var email = document.getElementById('emailInput').value;
+    firebase.auth().sendPasswordResetEmail(email).then(function() {
+      alert('Password Reset Email Sent!');
+    }).catch(function(error) {
+      //Handle errors here
+      var errorCode = error.code;
+      var errorMessage = error.message;
+
+      if(errorCode == 'auth/invalid-email') {
+        alert(errorMessage);
+      } else if (errorCode == 'auth/user-not-found') {
+        alert(errorMessage);
+      }
+      console.log(error);
+    });
+    //END sendpasswordemail
+  }
+
+  /**
+  * handles setting up UI event listeners and registering Firebase auth listeners:
+    * - firebase.auth().onAuthStateChanged listerer called when user is signed in or out, and THAT is where we update the UI
+  */
+
+  function initApp() {
+    //Listening for auth state changes
+    firebase.auth().onAuthStateChanged(function(user) {
+      if(user) { // User is signed in 
+        var displayName = user.displayName;
+        var email = user.email;
+        var emailVerified = user.emailVerified;
+        var uid = user.uid;
+
+        document.getElementById('quickstart-sign-in-status').textContent = 'Signed in!';
+        document.getElementById('quickstart-account-details').textContent = JSON.stringify(user, null, ' ');
+        document.getElementById('signInButt').textContent = 'Sign out';
+        document.getElementById('signUpButt').disabled=true;
+        document.getElementById('googleSignInButt').disabled=true;
+
+      } else { //User is signed out 
+        document.getElementById('quickstart-sign-in-status').textContent = 'Signed out';
+         document.getElementById('quickstart-account-details').textContent = 'null';
+        document.getElementById('signInButt').textContent = 'Sign in';
+       
+            document.getElementById('signInButt').disabled=false;
+      document.getElementById('signUpButt').disabled=false;
+      document.getElementById('googleSignInButt').disabled=false;
+    }
+  
+    });
+    // [END authstatelistener]
+
+    document.getElementById('signInButt').addEventListener('click', toggleSignIn);
+
+    document.getElementById('signUpButt').addEventListener('click', handleSignUp);
+  }
+    document.getElementById('googleSignInButt').addEventListener('click', googleSignIn);
+
+
+
+
+
+  window.onload = function() {
+    firebase.auth().getRedirectResult().then(function(result) {
+  if (result.credential) {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    var token = result.credential.accessToken;
+    // ...
+  }
+  // The signed-in user info.
+  var user = result.user;
+}).catch(function(error) {
+  // Handle Errors here.
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  // The email of the user's account used.
+  var email = error.email;
+  // The firebase.auth.AuthCredential type that was used.
+  var credential = error.credential;
+  // ...
 });
 
-/**
-* Function that gets the data of the profile in case
-* thar it has already saved in localstorage. Only the
-* UI will be update in case that all data is available
-*
-* A not existing key in localstorage return null
-*
-*/
-function getLocalProfile(callback){
-  var profileImgSrc      = localStorage.getItem("PROFILE_IMG_SRC");
-  var profileName        = localStorage.getItem("PROFILE_NAME");
-  var profileReAuthEmail = localStorage.getItem("PROFILE_REAUTH_EMAIL");
-
-  if(profileName !== null
-          && profileReAuthEmail !== null
-          && profileImgSrc !== null) {
-      callback(profileImgSrc, profileName, profileReAuthEmail);
-  }
-}
-
-/**
-* Main function that load the profile if exists
-* in localstorage
-*/
-function loadProfile() {
-  if(!supportsHTML5Storage()) { return false; }
-
-  getLocalProfile(function(profileImgSrc, profileName, profileReAuthEmail) {
-      //changes in the UI
-      $("#profile-img").attr("src",profileImgSrc);
-      $("#profile-name").html(profileName);
-      $("#reauth-email").html(profileReAuthEmail);
-      $("#inputEmail").hide();
-      $("#remember").hide();
-  });
-}
-
-/**
-* function that checks if the browser supports HTML5
-* local storage
-*
-* @returns {boolean}
-*/
-function supportsHTML5Storage() {
-  try {
-      return 'localStorage' in window && window['localStorage'] !== null;
-  } catch (e) {
-      return false;
-  }
-}
-
-/**
-* Test data. This data will be safe by the web app
-* in the first successful login of a auth user.
-* To Test the scripts, delete the localstorage data
-* and comment this call.
-*
-* @returns {boolean}
-*/
-function testLocalStorageData() {
-  if(!supportsHTML5Storage()) { return false; }
-  localStorage.setItem("PROFILE_IMG_SRC", "//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" );
-  localStorage.setItem("PROFILE_NAME", "Cher Huang SBHack2018");
-  localStorage.setItem("PROFILE_REAUTH_EMAIL", "xiaoxuah@uci.edu");
-}
+      initApp();
+    };
 
 </script>
+
+</html>
+
+
+
+
+<!-- 
+// <script>
+// $( document ).ready(function() {
+//   // DOM ready
+
+//   //testLocalStorageData();
+
+//   // Load profile if it exits
+//   loadProfile();
+// });
+
+// /**
+// * Function that gets the data of the profile in case
+// * thar it has already saved in localstorage. Only the
+// * UI will be update in case that all data is available
+// *
+// * A not existing key in localstorage return null
+// *
+// */
+// // function getLocalProfile(callback){
+// //   var profileImgSrc      = localStorage.getItem("PROFILE_IMG_SRC");
+// //   var profileName        = localStorage.getItem("PROFILE_NAME");
+// //   var profileReAuthEmail = localStorage.getItem("PROFILE_REAUTH_EMAIL");
+
+// //   if(profileName !== null
+// //           && profileReAuthEmail !== null
+// //           && profileImgSrc !== null) {
+// //       callback(profileImgSrc, profileName, profileReAuthEmail);
+// //   }
+// // }
+
+// /**
+// * Main function that load the profile if exists
+// * in localstorage
+// */
+// function loadProfile() {
+//   if(!supportsHTML5Storage()) { return false; }
+
+//   getLocalProfile(function(profileImgSrc, profileName, profileReAuthEmail) {
+//       //changes in the UI
+//       $("#profile-img").attr("src",profileImgSrc);
+//       $("#profile-name").html(profileName);
+//       $("#reauth-email").html(profileReAuthEmail);
+//       $("#inputEmail").hide();
+//       $("#remember").hide();
+//   });
+// }
+
+// /**
+// * function that checks if the browser supports HTML5
+// * local storage
+// *
+// * @returns {boolean}
+// */
+// function supportsHTML5Storage() {
+//   try {
+//       return 'localStorage' in window && window['localStorage'] !== null;
+//   } catch (e) {
+//       return false;
+//   }
+// }
+
+// /**
+// * Test data. This data will be safe by the web app
+// * in the first successful login of a auth user.
+// * To Test the scripts, delete the localstorage data
+// * and comment this call.
+// *
+// * @returns {boolean}
+// */
+// function testLocalStorageData() {
+//   if(!supportsHTML5Storage()) { return false; }
+//   localStorage.setItem("PROFILE_IMG_SRC", "//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" );
+//   localStorage.setItem("PROFILE_NAME", "Cher Huang SBHack2018");
+//   localStorage.setItem("PROFILE_REAUTH_EMAIL", "xiaoxuah@uci.edu");
+// }
+
+// </script>
+ -->
