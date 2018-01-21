@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <link href="style.css" rel="stylesheet" type="text/css">
-    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
     <meta name="author" content="Cher Huang, Ishani, ">
 
     <title>Safe Communte SBHack2018</title>
@@ -26,12 +26,17 @@
       #googleMap {
         width:100%;
         height:360px;
-        margin-top:30px;
+        margin-top:10px;
       }
 
       .black {
        color:white;
-}
+      }
+
+      .options{
+       margin-top:10px; 
+      }
+ 
 
     </style>
 
@@ -89,7 +94,13 @@
   
           </div>
         </div>
-
+      
+      <div class="row options">
+          <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> Gas <i class="fa fa-plug"></i> </button></div>
+          <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> Cafe <i class="fa fa-coffee"></i></button></div>
+          <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> ATM <i class="fa fa-money"></i></button></div>
+          <div class="col-md-3"> <button type="button" class="btn btn-warning text-center"> ACC <i class="fa fa-bed" aria-hidden='true'></i></button></div>
+      </div>
 
     <div id = "map_container">
           <div id="googleMap"></div>
