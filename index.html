@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <link href="style.css" rel="stylesheet" type="text/css">
-    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <meta name="author" content="Cher Huang, Ishani, ">
 
     <title>Safe Communte SBHack2018</title>
@@ -77,16 +80,13 @@
       <div class="row">
         <div class="col-md-6 text-center">    
           <div class="input-group search">
-              <input class="form-control" placeholder="Where are you driving from?">
-              <button class="btn btn-outline-secondary" type="button" >
-                  <i class="fa fa-map-marker black"></i>
-              </button>
+              <input id="searchText" class="form-control" placeholder="Where are you driving from?">
             </div>
         </div>
           <div class="col-md-6 text-center">    
             <div class="input-group search">
-                <input class="form-control" placeholder="Where are you going to?">
-                <button class="btn btn-outline-secondary" type="button" >
+                <input id="searchText2" class="form-control" placeholder="Where are you going to?">
+                <button id="to" class="btn btn-outline-secondary" type="button" >
                     <i class="fa fa-map-marker black"></i>
                 </button>
             </div>
@@ -102,10 +102,19 @@
       </div>
 
     <div id = "map_container">
-          <div id="googleMap"></div>
-    </div>
+          <div id ="map"><h1>Map Here </h1></div>
+      <div id="googleMap" style="width:50%;height:400px;"></div>
 
-    <div class="row text-right options">
+    </div>
+    <li id="yo" class="dropdown">
+      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Site Select<span class="caret"></span></a>
+      <ul class="dropdown-menu" id="projectSelectorDropdown">
+      </ul>
+    </li>         
+  <div id="TextBoxContainer">
+    <!--Textboxes will be added here -->
+</div>
+<div class="row text-right options">
         <div class="col-md-12"> <button type="button submit" class="btn btn-success" style="width:30%;" > Go </button></div>
       </div>
       
@@ -114,10 +123,48 @@
     <!-- Bootstrap core JavaScript -->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-      <script>
-  var map;
-  var infowindow;
-  var pointOfInterest;
+    <script>
+      var origin;
+      var destination;
+      var pathPointArray=[];
+      var map;
+      var infowindow;
+      var pointOfInterest;
+      var dictOfSuggestion = [];
+      var globalPlaceID;
+      var globalType;
+      var globalName;
+      
+      $( "#to" ).click(function() {
+        //alert($("#searchText").val());
+        origin=$("#searchText").val();
+        destination=$("#searchText2").val();
+        sbHackMap();
+      });
+
+      $("#projectSelectorDropdown").click(function(){
+       alert($("#projectSelectorDropdown :selected").text()); // The text content of the selected option
+       alert($("#projectSelectorDropdown").val()); // The value of the selected option
+        //alert("yoooo"+value+"..."+text);
+     });
+      
+    function autoComp(){
+              var input = document.getElementById('searchText');
+              var options = {
+              types: ['(cities)'],
+              componentRestrictions: {country: 'us'}
+               };
+
+              autocomplete = new google.maps.places.Autocomplete(input, options);
+
+             var input2 = document.getElementById('searchText2');
+              var options2 = {
+              types: ['(cities)'],
+              componentRestrictions: {country: 'us'}
+               };
+
+            autocomplete = new google.maps.places.Autocomplete(input2, options2);
+    }
   function sbHackMap() {
   //This is mapProperties
   //35.379701, -119.038609--Bkerfiel
@@ -134,10 +181,9 @@
   infowindow = new google.maps.InfoWindow();
 
 
-  //document.getElementById('submit').addEventListener('click', function() { //Add Submit button later
-          var origin="Los Angeles, CA";
-            var destination="San Francisco, CA";
-            calculateAndDisplayRoute(directionsService, directionsDisplay,origin,destination);
+                //document.getElementById('submit').addEventListener('click', function() { //Add Submit button later
+                          //alert(origin);
+                          calculateAndDisplayRoute(directionsService, directionsDisplay,origin,destination);
 
   }
   function calculateAndDisplayRoute(directionsService, directionsDisplay,or,des) {
@@ -148,11 +194,22 @@
             travelMode: 'DRIVING'
           }, function(response, status) {
             if (status === 'OK') {
+              pathPointArray=[];
               directionsDisplay.setDirections(response);
+              var hoursStrecth=2;
               var time = response.routes[0].legs[0].duration.text;
-              fetchCheckPoints(time,or,des);
-              //alert("time"+response.routes[0].legs[0].duration.text);
-              prompt("route",JSON.stringify(response));
+              alert(time);
+              var numberOfStops=(parseInt(time.split("hours")[0]*60)+parseInt((time.split("hours")[1]).split("mins")[0]))/(hoursStrecth*60);
+              //alert(numberOfStops);
+              var myRoute = response.routes[0].overview_path;
+              // /alert("No. Of routes availabe.."+myRoute.length+"...No. Of stops..."+Math.ceil(numberOfStops));
+              var incr=Math.floor(myRoute.length/(numberOfStops+1));
+              for (var i = incr; i < myRoute.length; i=i+incr) {
+                  //alert(i);
+                  pathPointArray.push(myRoute[i]);
+                  createMarker(myRoute[i],0);
+              }
+              //fetchCheckPoints(time,pathPointArray);
             } else {
               window.alert('Directions request failed due to ' + status);
             }
@@ -161,42 +218,132 @@
       
         }
   function callback(results, status) {
-          alert("callback called.."+results+"....."+status);
+          //alert("callback called.."+JSON.stringify(results)+"....."+status);
           if (status == google.maps.places.PlacesServiceStatus.OK) {
             alert("ok");
-            for (var i = 0; i < results.length; i++) {
-              createMarker(results[i]);
+            dictOfSuggestion=[];
+            for (var i = 0; i < 10/*results.length*/; i++) {
+              //createMarker(results[i],1);
+              //
+              dictOfSuggestion.push(results[i]);
             }
+            prompt("dictOfSuggestion",JSON.stringify(dictOfSuggestion));
+            $("#projectSelectorDropdown").empty();
+            var list = document.getElementById("projectSelectorDropdown"); 
+
+            for (var i = 0; i < dictOfSuggestion.length; i++){                
+            var opt = dictOfSuggestion[i].name;  
+            var li = document.createElement("li");
+            var link = document.createElement("a");             
+            var text = document.createTextNode(opt);
+            link.appendChild(text);
+            link.href = "#";
+            li.appendChild(link);
+            list.appendChild(li);
+            }
+            ////-----------------------------------------------//
+            //alert(JSON.stringify(dictOfSuggestion[0].photos[0].getUrl({'maxWidth': 35, 'maxHeight': 35})));
+            /*
+
+            for(var i=0 ; i< dictOfSuggestion.length ; i++) {
+              var photoUrl;
+              try{
+              photoURL=dictOfSuggestion[i].photos[0].getUrl({'maxWidth': 1000, 'maxHeight': 1000});
+              }
+              catch(err){
+                 photoURL=dictOfSuggestion[0].photos[0].getUrl({'maxWidth': 1000, 'maxHeight': 1000});
+              }
+             
+              $('<div class="item"><img src="'+photoURL+'"><div class="carousel-caption"></div>   </div>').appendTo('.carousel-inner');
+              $('<li data-target="#carousel-example-generic" data-slide-to="'+i+'"></li>').appendTo('.carousel-indicators')
+
+            }
+            $('.item').first().addClass('active');
+            $('.carousel-indicators > li').first().addClass('active');
+            $('#carousel-example-generic').carousel();
+
+  ////////////////---------
+            var x = document.getElementById("swipe_container");
+            x.style.display = "block";
+            //infowindow.setContent(place.name);
+            //infowindow.setContent(getWindowContent);
+            */
+            infowindow.open(map, this);
           }
         }
+  //fiunction getWindowContent(){
 
-  function createMarker(place) {
-          var placeLoc = place.geometry.location;
-          var marker = new google.maps.Marker({
+  //}
+  function displayLocation(latitude,longitude){
+        var request = new XMLHttpRequest();
+
+        var method = 'GET';
+        var url = 'http://maps.googleapis.com/maps/api/geocode/json?latlng='+latitude+','+longitude+'&sensor=true';
+        var async = true;
+       
+        request.open(method, url, async);
+        request.onreadystatechange = function(){
+          if(request.readyState == 4 && request.status == 200){
+            var data = JSON.parse(request.responseText);
+            var address = data.results[0];
+            
+          }
+        };
+        request.send();
+      };
+
+  function createMarker(place,key) {
+          var placeLoc;
+          var marker;
+          if(key==1){
+          placeLoc = place.geometry.location;
+          marker = new google.maps.Marker({
             map: map,
-            position: place.geometry.location
-          });
+            position: place.geometry.location,
+            title: 'place.name'
+            });
+          }
+          else{
+            //var add=displayLocation(place.lat(),place.lng()).address;
+            //alert(add);
+           
+            placeLoc = place;
+            marker = new google.maps.Marker({
+            map: map,
+            position: place,
+            title: 'A'
 
+            });
+          }
+          //////CLICKINg///////////////////
+          marker.setMap(map);
           google.maps.event.addListener(marker, 'click', function() {
-            infowindow.setContent(place.name);
-            infowindow.open(map, this);
+            dictOfSuggestion=[];
+            alert("I am clicking something new..Dict shud be empty.."+dictOfSuggestion.length+"...I am clicking for.."+place);
+            fetchCheckPoints(place);
+            
+            
           });
         }
 
-  function fetchCheckPoints(time,origin,destination){
-      alert("I am up for finding gas statations"+time);
-      pointOfInterest=new google.maps.LatLng(35.379701,-119.038609);
-      var service = new google.maps.places.PlacesService(map);
-          service.nearbySearch({
-            location: pointOfInterest,
-            radius: 50000,
-            type: ['atm']
-          }, callback);
-
+  function fetchCheckPoints(place){
+      alert("I am up for finding atm statations");
+      //var arrForLoc[]=pathPointArray;
+      //alert(arrForLoc);
+      //for (var i = 0; i < pathPointArray.length; i++) {
+      //alert("The lat and log for which I am searching stuff is ..."+place);
+      pointOfInterest=new google.maps.LatLng(place.lat(),place.lng());
+          var service = new google.maps.places.PlacesService(map);
+              service.nearbySearch({
+                location: pointOfInterest,
+                radius: 5000,
+                type: ['cafe']
+              }, callback);
+      //}
   }
   </script>
   <!---This is the script for getting ggole api -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-DxoYSJV45J7rAz6-qCCv8HB2Wwqyp0&libraries=places&callback=sbHackMap"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBv-DxoYSJV45J7rAz6-qCCv8HB2Wwqyp0&libraries=places&callback=autoComp"></script>
    
   </body>     
 </html>
