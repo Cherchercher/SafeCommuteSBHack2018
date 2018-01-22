@@ -1,17 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html id="loginHTML" lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <link href="style.css" rel="stylesheet" type="text/css">
-    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <meta name="author" content="Cher Huang, Ishani, ">
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Merriweather">
+    <meta name="author" content="Cher Huang, Ishani, Haejin Jo">
 
-    <title>Safe Communte SBHack2018</title>
+    <title>Breathr</title>
 
     <!-- Bootstrap core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -50,7 +48,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-info fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="#">Safe Communte SBHack2018</a>
+        <a class="navbar-brand" href="#">Breathr</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -62,17 +60,14 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Login</a>
+              <a class="nav-link" onclick="firebase.auth().signOut();" href="#">Sign Out</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">About</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Contact</a>
-            </li>
           </ul>
         </div>
-      </div>
+      </div> 
     </nav>
 
     <!-- Page Content -->
@@ -103,7 +98,7 @@
 
     <div id = "map_container">
           <div id ="map"></div>
-      <div id="googleMap" style="width:50%;height:400px;"><h1>Your Path is here ! </h1></div>
+      <div id="googleMap" style="width:100%;height:400px;"><h1>Your Path is here ! </h1></div>
 
     </div>
    <form>
@@ -113,9 +108,13 @@
 </form>       
   <div id="TextBoxContainer">
     <!--Textboxes will be added here -->
+    <div class="form-group">
+  <label for="usr">Choosen values</label>
+  <input type="text" class="form-control" id="usr">
+</div>
 </div>
 <div class="row text-right options">
-        <div class="col-md-12"> <button type="button submit" class="btn btn-success" style="width:30%;"  onclick="location.href='tracker.html';" > Go </button></div>
+        <div class="col-md-12"> <button type="button submit" class="btn btn-success" style="width:30%;"   onClick="submitEver()" > Go </button></div>
       </div>
       
     </div>
@@ -123,6 +122,10 @@
     <!-- Bootstrap core JavaScript -->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
     <script>
       var origin;
       var destination;
@@ -136,20 +139,48 @@
       var globalName;
       var globalDic=[];
       var count=1;
+      var numberOfStops;
       var category=$('.btn-group > .btn.active').html();
       //alert("category"+category);
+      var config = {
+            apiKey: "AIzaSyD30NRd2YYwkCS25FArj058_oUoXdPYp2I",
+            authDomain: "safecommutesbhacks2018.firebaseapp.com",
+            databaseURL: "https://safecommutesbhacks2018.firebaseio.com",
+            projectId: "safecommutesbhacks2018",
+            storageBucket: "safecommutesbhacks2018.appspot.com",
+            messagingSenderId: "178423802061",
+         };
+      firebase.initializeApp(config);
       $( "#to" ).click(function() {
         //alert($("#searchText").val());
         origin=$("#searchText").val();
         destination=$("#searchText2").val();
         sbHackMap();
       });
+      function writeDummyItinerary(userId) {
+    
+            var usersRef = firebase.database().ref("users");
+            // even if itineraries doesnte xist yet, this will be ok. just write to the node and it will get created
+            var newItineraryRef = usersRef.child(userId).child("itineraries").push();
+            var newItineraryId = newItineraryRef.key;
+            newItineraryRef.set({
+              to: globalDic.to,
+              from: globalDic.from,
+              numStops: Math.ceil(numberOfStops),
+              jsonInfo: JSON.stringify(globalDic)
+            });
+            
+        }
       function submitEver(){
         prompt("Final Json",JSON.stringify(globalDic));
+         document.getElementById("usr").value=JSON.stringify(globalDic);
+         writeDummyItinerary(1222);
       }
       function myFunction() {
             var x = document.getElementById("mySelect").selectedIndex;
             var y = document.getElementById("mySelect").options;
+            globalDic.to=destination;
+            globalDic.from=origin;
             globalDic.push({
                 locationName:   globalPlaceID,
                 type: "cafe",
@@ -209,7 +240,7 @@
               var hoursStrecth=2;
               var time = response.routes[0].legs[0].duration.text;
               //alert(time);
-              var numberOfStops=(parseInt(time.split("hours")[0]*60)+parseInt((time.split("hours")[1]).split("mins")[0]))/(hoursStrecth*60);
+              numberOfStops=(parseInt(time.split("hours")[0]*60)+parseInt((time.split("hours")[1]).split("mins")[0]))/(hoursStrecth*60);
               //alert(numberOfStops);
               var myRoute = response.routes[0].overview_path;
               // /alert("No. Of routes availabe.."+myRoute.length+"...No. Of stops..."+Math.ceil(numberOfStops));
@@ -241,9 +272,10 @@
             $("#mySelect").empty();
 
             for (var i = 0; i < dictOfSuggestion.length; i++){   
+            var txt=dictOfSuggestion[i].name;
             var x = document.getElementById("mySelect"); 
             var option = document.createElement("option");
-            option.text = dictOfSuggestion[i].name;
+            option.text = txt ;
             x.add(option);
           }
             /*for (var i = 0; i < dictOfSuggestion.length; i++){                
@@ -358,6 +390,17 @@
                 type: ['cafe']
               }, callback);
       //}
+  }
+
+    window.onload=function() {
+    firebase.auth().onAuthStateChanged(function(currentUser) {
+      if(currentUser) {
+        var currUserId=currentUser.uid;
+        console.log(currentUser);
+      } else {
+        window.location='login.html';
+      }
+    });
   }
   </script>
   <!---This is the script for getting ggole api -->

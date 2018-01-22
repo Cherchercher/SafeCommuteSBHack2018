@@ -1,0 +1,29 @@
+<script src=“https://www.gstatic.com/firebasejs/4.9.0/firebase-app.js“></script>
+<script src=“https://www.gstatic.com/firebasejs/4.9.0/firebase-auth.js”></script>
+<script src=“https://www.gstatic.com/firebasejs/4.9.0/firebase-database.js”></script>
+<script src=“https://www.gstatic.com/firebasejs/4.9.0/firebase.js”></script>
+<script type=“text/javascript”>
+  // Initialize Firebase according to our project specifications
+  var config = {
+    apiKey: "AIzaSyD30NRd2YYwkCS25FArj058_oUoXdPYp2I",
+    authDomain: "safecommutesbhacks2018.firebaseapp.com",
+    databaseURL: "https://safecommutesbhacks2018.firebaseio.com",
+    projectId: "safecommutesbhacks2018",
+    storageBucket: "safecommutesbhacks2018.appspot.com",
+    messagingSenderId: "178423802061",
+  };
+  firebase.initializeApp(config);
+  function writeDummyItinerary(userId) {
+    
+    var usersRef = firebase.database().ref("users");
+    // even if itineraries doesnte xist yet, this will be ok. just write to the node and it will get created
+    var newItineraryRef = usersRef.child(userId).child("itineraries").push();
+    var newItineraryId = newItineraryRef.key;
+    newItineraryRef.set({
+      to: "ABC",
+      from: "DEF",
+      numStops: 7,
+      jsonInfo: "mickey d’s, cafe: blah bd;flajh"
+    });
+    
+  }
